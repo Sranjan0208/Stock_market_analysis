@@ -5,23 +5,42 @@ import os
 
 
 def plot_stock(symbol):
-    # Load your data
-    df = pd.read_csv(f"data/processed/{symbol}_processed.csv", index_col=0)
-    # Ensure the index is datetime
-    df.index = pd.to_datetime(df.index, errors='coerce')
-    df = df.dropna()  # Drop NaT if any exist
+    # Load processed data
+    df = pd.read_csv(
+        f"data/processed/{symbol}_processed.csv", index_col="Date", parse_dates=True)
+    df = df.dropna()  # Drop rows with NaT if any exist
 
-    plt.figure(figsize=(10, 5))
-    plt.plot(df.index, df['Adj Close'], label="Adjusted Closing Price")
-    plt.title(f'Stock Prices for {symbol}')
-    plt.xlabel('Date')
-    plt.ylabel('Price')
+    plt.figure(figsize=(12, 6))
+
+    # Plot adjusted closing price
+    plt.plot(df.index, df['Adj Close'],
+             label="Adjusted Close", color="blue", linewidth=1.5)
+
+    # Plot 50-day moving average
+    plt.plot(df.index, df['MA_50'], label="50-Day Moving Average",
+             color="orange", linestyle="--")
+
+    # Plot 20-day rolling volatility
+    plt.plot(df.index, df['Volatility_20'],
+             label="20-Day Volatility", color="red", linestyle="-.")
+
+    # Add titles and labels
+    plt.title(f'Stock Analysis for {symbol}', fontsize=14)
+    plt.xlabel('Date', fontsize=12)
+    plt.ylabel('Price and Volatility', fontsize=12)
     plt.legend()
+
+    # Show the plot
     plt.show()
 
 
 def visualize_all():
+    # Go through each processed stock data file and plot
     for filename in os.listdir("data/processed"):
-        if "analysis" in filename:
+        if filename.endswith("_processed.csv"):
             symbol = filename.split("_")[0]
             plot_stock(symbol)
+
+
+if __name__ == "__main__":
+    visualize_all()
